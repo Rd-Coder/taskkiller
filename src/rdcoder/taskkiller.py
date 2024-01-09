@@ -115,3 +115,21 @@ def wait_boot_offset(offset_minutes: int = 5):
         print(f'> Aguarde {remaining_time_min} min desde o logon para começar a limpeza...')
         time.sleep(SEC_PER_MIN)
         ANSI.delete_line()
+
+
+def main(args: list):
+    os.system('') # Enable ANSI CHARACTERS
+    ignoredList: list = input('Apps ou serviços para manter ativos (separados por espaço): ').strip().split(' ')
+    ignoredTuple = tuple() if len(ignoredList)==1 and ignoredList[0]=='' else tuple(ignoredList)
+
+    wait_boot_offset()
+    
+    print('> Executando...')
+    killer = TaskKiller()
+    killer.killProcesses(tuple(ProcessesEnum.APPS.value), tuple(ProcessesEnum.SERVICES.value), ignoredTuple)
+
+    input('\nOK!')
+
+if __name__ == '__main__':
+    import sys
+    main(list(sys.argv))
