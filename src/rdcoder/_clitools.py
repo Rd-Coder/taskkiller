@@ -1,4 +1,7 @@
 from typing import Callable
+from enum import Enum
+from threading import Thread
+import time
 
 class ANSI(Enum):
     RED         = "\033[1;31m"
@@ -21,18 +24,17 @@ def delete_chars(qty: int) -> None:
     print(MOVE_LEFT, DEL_RIGHT, end='')
 
 def printcl(obj, color: ANSI, sep='', end='\n', flush=False) -> None:
-    print(color.value, obj, CLColor.RESET.value, sep=sep, end=end, flush=flush)
+    print(color.value, obj, ANSI.RESET.value, sep=sep, end=end, flush=flush)
 
-def animate_wait(cls, continue_condition: Callable[[], bool]) -> Thread:
-    from threading import Thread
+def animate_wait(continue_condition: Callable[[], bool]) -> Thread:
 
     def animation():
         print(' ',end='')
         FRAMES = [' ','.', '..', '...']
         while continue_condition():
             for frame in FRAMES:
-                printcl(frame, CLColor.YELLOW, end='', flush=True)
-                CLColor.delete_chars(len(frame))
+                printcl(frame, ANSI.YELLOW, end='', flush=True)
+                delete_chars(len(frame))
                 time.sleep(0.2)
 
     return Thread(target=animation)
