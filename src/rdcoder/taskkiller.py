@@ -14,3 +14,38 @@ class ProcessesEnum(Enum):
         'TapiSrv', 'InstallService', 'DSAService', 'Spooler', 'gamingservicesnet.exe',
         'gameinputsvc.exe', 'gamingservices.exe', 'gamingservices'
     ]
+def wait_boot_offset(offset_minutes: int = 5):
+    import time
+
+    def get_logon_time_sec():
+        import getpass
+        import win32.win32net as win
+
+        win_username = getpass.getuser()
+        user_info = win.NetUserGetInfo(None, win_username, 2)
+        return user_info['last_logon']
+    
+    LOGON_TIME = get_logon_time_sec()
+    SEC_PER_MIN = 60
+    OFFSET_MIN = offset_minutes
+    interval_min = (time.time() - LOGON_TIME) // SEC_PER_MIN
+
+    user_will_wait_input = ''
+    OPTIONS = ['S', 'N']
+    while (interval_min < OFFSET_MIN) and (user_will_wait_input not in OPTIONS):
+        user_will_wait_input = input(
+            f'Quer esperar o tempo de logon de {interval_min} min? (S/N)'
+        ).upper()
+        
+        if user_will_wait == 'S':
+            break
+        elif user_will_wait == 'N':
+            return
+        else:
+            print(f'Opção {user_will_wait} inválida.')
+
+    while (interval_min := (time.time() - LOGON_TIME) // SEC_PER_MIN) < OFFSET_MIN:
+        remaining_time_min = OFFSET_MIN - interval_MIN + 1
+        print(f'> Aguarde {remaining_time_min} min desde o logon para começar a limpeza...')
+        time.sleep(SEC_PER_MIN)
+        ANSI.delete_line()
