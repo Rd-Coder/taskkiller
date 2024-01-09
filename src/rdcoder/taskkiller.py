@@ -14,6 +14,38 @@ class ProcessesEnum(Enum):
         'TapiSrv', 'InstallService', 'DSAService', 'Spooler', 'gamingservicesnet.exe',
         'gameinputsvc.exe', 'gamingservices.exe', 'gamingservices'
     ]
+class TaskKiller:
+
+    @classmethod
+    def killProcess(
+        cls, process: psutil.Process, isApp: bool, retry: bool=False, timeout=5
+    ) -> bool:        
+        PLAY_ANIMATION = True
+        wait_animation = _clitools.animate_wait(lambda: PLAY_ANIMATION)
+
+        try:
+            name = process.name()
+            identifier = 'processo' if isApp else 'serviço'
+            print(f'Terminando {identifier} {name}', end='', flush=True)
+
+            wait_animation.start()
+
+            process.terminate()
+            process.wait(timeout)
+
+            PLAY_ANIMATION = False
+            wait_animation.join()
+
+            printcl('OK', ANSI.GREEN)
+        except:
+            PLAY_ANIMATION = False
+            wait_animation.join()
+            printcl('Erro', ANSI.RED)
+
+            if not retry:
+                TaskKiller.killProcess(process, isApp, True, timeout*2)
+            return False
+        return True
 def wait_boot_offset(offset_minutes: int = 5):
     import time
 
