@@ -1,4 +1,8 @@
+import _clitools
+import psutil, time, os
+from _clitools import ANSI, printcl
 from enum import Enum
+
 class ProcessesEnum(Enum):
     APPS: list = [
         'msedge', 'chrome', 'yourphone', 'PhoneExperienceHost.exe', 'OfficeClickToRun.exe', 'OfficeC2RClient.exe',
@@ -14,6 +18,7 @@ class ProcessesEnum(Enum):
         'TapiSrv', 'InstallService', 'DSAService', 'Spooler', 'gamingservicesnet.exe',
         'gameinputsvc.exe', 'gamingservices.exe', 'gamingservices'
     ]
+
 class TaskKiller:
 
     @classmethod
@@ -46,6 +51,35 @@ class TaskKiller:
                 TaskKiller.killProcess(process, isApp, True, timeout*2)
             return False
         return True
+
+    def killProcesses(self, apps: tuple, services: tuple, ignoreTuple: tuple, verifyAtEnd=True) -> set:
+        ignoredSet:set = set()
+        
+        for proc in psutil.process_iter():
+            name = proc.name()
+            try:
+                isApp = False
+                hasSucceed = False
+
+                if name.startswith(ignoreTuple):
+                    if not(name in ignoredSet):
+                        ignoredSet.add(name)
+                        printcl(name+ ' ignorado.', ANSI.GREY, flush=True)
+                    continue
+
+                if (name.startswith(apps)):
+                    isApp = True
+                    hasSucceed = TaskKiller.killProcess(proc, isApp)
+                elif name.startswith(services):
+                    isApp = False
+                    hasSucceed = TaskKiller.killProcess(proc, isApp)
+            except:
+                raise # TODO make error explicit
+        
+        if (verifyAtEnd):
+            print('\n> Verificando se tá tudo certo...')
+            self.killProcesses(apps, services, ignoreTuple, verifyAtEnd=False)
+
 def wait_boot_offset(offset_minutes: int = 5):
     import time
 
